@@ -40,6 +40,8 @@ void get_filename(int fd)
         dirent=readdir(dir);
         if(NULL==dirent)
         break;
+        if(strcmp(dirent->d_name,".")==0 || strcmp(dirent->d_name,"..")==0)
+             continue;
         sprintf(filelist,"%s",dirent->d_name);
         strcat(file,filelist);
         strcat(file,"\n");

@@ -1,14 +1,14 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-
+#include<unistd.h>
 #include "ftp.h"
 #include "tcp.h"
 
 void send_file(int fd,const char *pathname)
 {
     //打开文件
-    int filefd = open(pathname,O_WRONLY | O_TRUNC | O_CREAT,0664);
+    int filefd = open(pathname,O_WRONLY);
     //先暂时不讨论失败的情况
     if(-1 == filefd)
     {
@@ -32,6 +32,7 @@ void send_file(int fd,const char *pathname)
     }
     buf[0] = 1;//第一个字节为1表示，当前文件已经发送完毕
     send_message(fd,buf,1);
+    sleep(3);
     //关闭文件
     close(filefd);
 }
