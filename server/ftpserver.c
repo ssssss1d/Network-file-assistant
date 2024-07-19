@@ -22,14 +22,16 @@ void handler(int sig)
     }
 }
 
-void get_filename(int fd)
+void get_filename(int fd,const char * path)
 {
     DIR *dir;
     struct dirent *dirent;
-    dir=opendir(".");
+    dir=opendir(path);
     if(dir==NULL)
     {
         perror("open failed");
+        char file[]={"open failed"};
+        send_message(fd,file,sizeof(file));
         return ;
     }
     char filelist[100]={0};
@@ -114,13 +116,16 @@ void communication(int fd)
                 case UPLOAD:
                     strncpy(filename,&buf[2],buf[1]);
                     filename[buf[1]] = '\0';
-                    //把这个文件通过网络传送给客户端
+                   // char file[]={0};
+                  //  recv_message(fd,file,sizeof(file));
+                    //把这个文件通过网络传送给服务端
                     printf("upload filename:%s\n",filename);
                     recv_file(fd,filename);
                     break;
 
                 case LIST:
-                get_filename(fd);
+                strncpy(filename,&buf[2],buf[1]);
+                get_filename(fd,filename);
                     break;
                 default:
                     break;

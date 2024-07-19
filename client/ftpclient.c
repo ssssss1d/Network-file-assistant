@@ -28,6 +28,7 @@ void handler(int sig)
 int cmp_filename(int fd,const char * fp,const char * addr)
 {
     printf("start cmp_filename\n");
+    printf("addr:%s  sizeof(addr):%ld\n",addr,sizeof(addr));
     DIR *dir;
     struct dirent *dirent;
     dir=opendir(addr);
@@ -117,34 +118,51 @@ int main(int argc,char *argv[])
         else if(strncmp(buf,"upload ",7)==0)
         {
             data[0]=UPLOAD;
-            data[1]=strlen(buf)-8;
+            int ans=7;
+            char path[100]={0};
+            while(buf[ans++]!=' ')
+             {}
+            data[1]=ans-8;//计算文件名长度
             strncpy(&data[2],&buf[7],data[1]);
-            strncpy(filename,&buf[7],data[1]);
+            strncpy(filename,&buf[7],data[1]);//文件名拼接
+            printf("data[1]:%d\n",data[1]);
             filename[data[1]] = '\0';
-            
-            
-
-            int x=cmp_filename(sockfd,filename,"../server");
+            int sum=ans;//截止为文件名后一位下标
+             while(buf[ans]!='\0')
+                {ans++;}
+                ans-=sum;//目录路径长度
+                
+                printf("sum:%d  buf[sum]:%c\n",sum,buf[sum]);
+            strncpy(path,&buf[sum],ans-1);//获取输入的目标文件所在的路径
+            printf("current file path:%s\n",path);
+            printf("current filename :%s\n",filename);
+          //  char  clientpath[]="../client";
+            int x=cmp_filename(sockfd,filename,path);
+             strcat(path,"/");
+            strcat(path,filename);
+            printf("path:%s\n",path);
+          
             //    printf("cmp_filename==%d\n",x);
           //  if(cmp_filename(sockfd,filename)==-1)
             //    continue;
             if(flag==1)
                 {
-                    printf("start send_file\n");
-                    send_message(sockfd,data,2+strlen(buf) - 8);
-                    send_file(sockfd,filename);
+                    //printf("start send_file\n");
+                    send_message(sockfd,data,2+data[1]);
+                    //printf("看看在哪阻塞住了！");
+                    send_file(sockfd,path);
                 }
                 else
                 printf("file does not exist!\n");
             flag=0;
         }
-        else if(strncmp(buf,"list",4)==0)
+        else if(strncmp(buf,"list ",5)==0)
         {
              data[0]=LIST;
-             data[1]=strlen(buf)-5;
-             strncpy(&data[2],&buf[4],data[1]);
+             data[1]=strlen(buf)-6;
+             strncpy(&data[2],&buf[5],data[1]);
              //printf("%c\n",data);
-            send_message(sockfd,data,2+strlen(buf) - 5);
+            send_message(sockfd,data,2+strlen(buf) - 6);
            // strncpy(filename,&buf[4],data[1]);
            // filename[data[1]] = '\0';
            // send_file(sockfd,filename);
