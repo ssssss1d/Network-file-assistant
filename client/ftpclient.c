@@ -93,27 +93,70 @@ int main(int argc,char *argv[])
     while(1)
     {
         printf("三个功能，请输入:(输入格式如下)\n");
-        printf("下载文件输入:download filename\n");
-        printf("上传文件输入:upload filename\n");
-        printf("获取文件列表请输入:list\n");
+        printf("下载文件输入:download filename filepath\n");
+        printf("上传文件输入:upload filename filepath\n");
+        printf("获取文件列表请输入:list  filepath\n");
         printf("退出请输入:exit\n");
         fgets(buf,100,stdin);
         //printf("%s\n",buf);
         if(strncmp(buf,"download ",9)==0)
         {
-            printf("%s,%lu\n",buf,strlen(buf));
-            data[0] = DOWNLOAD;
-            data[1] = strlen(buf) - 10;
-            strncpy(&data[2],&buf[9],data[1]);
-            send_message(sockfd,data,2+strlen(buf) - 10);
-            printf("%s,%d\n",__func__,__LINE__);
-            strncpy(filename,&buf[9],data[1]);
+            // printf("%s,%lu\n",buf,strlen(buf));
+            // data[0] = DOWNLOAD;
+            // data[1] = strlen(buf) - 10;
+            // strncpy(&data[2],&buf[9],data[1]);
+            // send_message(sockfd,data,2+strlen(buf) - 10);
+            // printf("%s,%d\n",__func__,__LINE__);
+            // strncpy(filename,&buf[9],data[1]);
+            // filename[data[1]] = '\0';
+            // printf("%s\n",filename);
+            // if(cmp_filename(sockfd,filename,"../server")==0)
+            // recv_file(sockfd,filename);
+            // else
+            // printf("file does not exist\n");
+            data[0]=DOWNLOAD;
+            int ans=9;
+            char path[100]={0};
+            while(buf[ans++]!=' ')
+             {}
+            data[1]=ans-10;//计算文件名长度
+           // strncpy(&data[2],&buf[7],data[1]);
+            strncpy(filename,&buf[9],data[1]);//文件名拼接
+            printf("data[1]:%d\n",data[1]);
             filename[data[1]] = '\0';
-            printf("%s\n",filename);
-            if(cmp_filename(sockfd,filename,"../server")==0)
-            recv_file(sockfd,filename);
-            else
-            printf("file does not exist\n");
+            int sum=ans;//截止为文件名后一位下标
+             while(buf[ans]!='\0')
+                {ans++;}
+                ans-=sum;//目录路径长度
+                
+                printf("sum:%d  buf[sum]:%c\n",sum,buf[sum]);
+            strncpy(path,&buf[sum],ans-1);//获取输入的目标文件所在的路径
+            printf("current file path:%s\n",path);
+            printf("current filename :%s\n",filename);
+
+            int x=cmp_filename(sockfd,filename,path);//去指定目录查找指定文件是否存在
+            strcat(path,"/");
+            strcat(path,filename);
+            printf("path:%s  sizeof(path):%ld\n",path,sizeof(path));
+            data[1]+=ans; 
+            strncpy(&data[2],path,data[1]);
+           
+
+          //  char  clientpath[]="../client";
+          send_message(sockfd,data,2+data[1]);//发送信息准备接受文件
+            
+            //    printf("cmp_filename==%d\n",x);
+          //  if(cmp_filename(sockfd,filename)==-1)
+            //    continue;
+            if(flag==1)
+                {
+                    //printf("start send_file\n");
+                    //printf("看看在哪阻塞住了！");
+                    recv_file(sockfd,filename);
+                }
+                else
+                printf("file does not exist!\n");
+            flag=0;
         }
         else if(strncmp(buf,"upload ",7)==0)
         {
@@ -160,8 +203,16 @@ int main(int argc,char *argv[])
         {
              data[0]=LIST;
              data[1]=strlen(buf)-6;
+             char path[]={0};
+              printf("path:%s\n",path);
              strncpy(&data[2],&buf[5],data[1]);
+             strncpy(path,&buf[5],data[1]);
              //printf("%c\n",data);
+           //  for(int i=2;i<2+data[1];i++)
+          //   printf("data[%d]:%c\n",i,data[i]);
+            // printf("data[12]:%c\n",data[12]);
+           //  printf("path:%s\n",path);
+             printf("data[1]:%d\n",data[1]);
             send_message(sockfd,data,2+strlen(buf) - 6);
            // strncpy(filename,&buf[4],data[1]);
            // filename[data[1]] = '\0';
